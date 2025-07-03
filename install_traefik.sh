@@ -57,8 +57,7 @@ EOF
 
 echo "Запускание контейнеров…"
 cd "${COMPOSE_DIR}"
-docker-compose pull
-docker-compose up -d
+docker compose up -d
 
 echo "Traefik запущен в сети ${NETWORK_NAME}."
 cd /home/
