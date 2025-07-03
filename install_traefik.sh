@@ -55,7 +55,7 @@ volumes:
     driver: local
 EOF
 
-echo "Запускание контейнеров…"
+echo "Запуск контейнеров…"
 cd "${COMPOSE_DIR}"
 docker compose up -d
 
