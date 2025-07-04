@@ -28,14 +28,14 @@ fi
 mkdir -p "${COMPOSE_DIR}"
 
 echo "Создание файла окружения ${ENV_FILE}…"
-cat > "${ENV_FILE}" << 'EOF'
+cat > "${ENV_FILE}" << EOF
 EMAIL=support@llmagent.ru
 GRAFANA_HOST=${GRAFANA_HOST}
-GRAFANA_ADMIN_PASSWORD=$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c16)
+GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
 EOF
 
 echo "Создание ${COMPOSE_FILE}…"
-cat > "${COMPOSE_FILE}" << 'EOF'
+cat > "${COMPOSE_FILE}" << EOF
 services:
   traefik:
     image: traefik:v3.1
@@ -98,9 +98,6 @@ volumes:
     driver: local
 EOF
 
-echo "Запуск контейнеров…"
 cd "${COMPOSE_DIR}"
-docker compose up -d
 
-echo "Traefik, Grafana и Prometheus запущен в сети ${NETWORK_NAME}."
-cd /home/
+echo "Осталось настроить env и запустить"
