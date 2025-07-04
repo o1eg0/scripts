@@ -13,6 +13,8 @@ else
   read -rp "Введите домен для Grafana (например, grafana.example.com): " GRAFANA_HOST </dev/tty
 fi
 
+echo "хост для Grafana: ${GRAFANA_HOST}"
+
 if ! docker network inspect "${NETWORK_NAME}" >/dev/null 2>&1; then
   echo "Создание docker-сети ${NETWORK_NAME}…"
   docker network create \
@@ -73,7 +75,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.grafana.entrypoints=websecure"
-      - "traefik.http.routers.grafana.rule=Host(\`\${GRAFANA_HOST}\`)"
+      - "traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}`)"
       - "traefik.http.routers.grafana.tls=true"
       - "traefik.http.routers.grafana.tls.certresolver=myresolver"
 
