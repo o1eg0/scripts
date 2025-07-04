@@ -34,7 +34,7 @@ GRAFANA_HOST=
 EOF
 
 echo "Создание ${COMPOSE_FILE}…"
-cat > "${COMPOSE_FILE}" << EOF
+cat > "${COMPOSE_FILE}" << 'EOF'
 services:
   traefik:
     image: traefik:v3.1
