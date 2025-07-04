@@ -5,6 +5,9 @@ NETWORK_NAME="traefik"
 MTU="1450"
 COMPOSE_DIR="/home/base"
 COMPOSE_FILE="${COMPOSE_DIR}/docker-compose.yml"
+ENV_FILE="${COMPOSE_DIR}/.env"
+
+read -rp "Введите домен для Grafana (например, grafana.example.com): " GRAFANA_HOST
 
 if ! docker network inspect "${NETWORK_NAME}" >/dev/null 2>&1; then
   echo "Создание docker-сети ${NETWORK_NAME}…"
@@ -17,6 +20,13 @@ else
 fi
 
 mkdir -p "${COMPOSE_DIR}"
+
+echo "Создание файла окружения ${ENV_FILE}…"
+cat > "${ENV_FILE}" << 'EOF'
+EMAIL=support@llmagent.ru
+GRAFANA_HOST=${GRAFANA_HOST}
+GRAFANA_ADMIN_PASSWORD=$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c16)
+EOF
 
 echo "Создание ${COMPOSE_FILE}…"
 cat > "${COMPOSE_FILE}" << 'EOF'
@@ -31,7 +41,7 @@ services:
       - --entrypoints.web.http.redirections.entryPoint.to=websecure
       - --entrypoints.websecure.http.tls=true
       - --certificatesresolvers.myresolver.acme.tlschallenge=true
-      - --certificatesresolvers.myresolver.acme.email=support@llmagent.ru
+      - --certificatesresolvers.myresolver.acme.email=${EMAIL}
       - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
       - --api.insecure=true
       - --api.dashboard=true
@@ -46,6 +56,31 @@ services:
       - traefik
     restart: always
 
+  grafana:
+    image: grafana/grafana:latest
+    env_file:
+      - .env
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=\${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.rule=Host(\`\${GRAFANA_HOST}\`)"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.tls.certresolver=myresolver"
+
+  prometheus:
+    image: prom/prometheus:latest
+    expose:
+      - 9090
+    networks:
+      - traefik
+    restart: always
+
 networks:
   traefik:
     external: true
@@ -53,11 +88,13 @@ networks:
 volumes:
   letsencrypt:
     driver: local
+  grafana-data:
+    driver: local
 EOF
 
 echo "Запуск контейнеров…"
 cd "${COMPOSE_DIR}"
 docker compose up -d
 
-echo "Traefik запущен в сети ${NETWORK_NAME}."
+echo "Traefik, Grafana и Prometheus запущен в сети ${NETWORK_NAME}."
 cd /home/
