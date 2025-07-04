@@ -30,8 +30,7 @@ mkdir -p "${COMPOSE_DIR}"
 echo "Создание файла окружения ${ENV_FILE}…"
 cat > "${ENV_FILE}" << EOF
 EMAIL=support@llmagent.ru
-GRAFANA_HOST=${GRAFANA_HOST}
-GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+GRAFANA_HOST=
 EOF
 
 echo "Создание ${COMPOSE_FILE}…"
@@ -66,8 +65,6 @@ services:
     image: grafana/grafana:latest
     env_file:
       - .env
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
     volumes:
       - grafana-data:/var/lib/grafana
     networks:
