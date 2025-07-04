@@ -7,7 +7,11 @@ COMPOSE_DIR="/home/base"
 COMPOSE_FILE="${COMPOSE_DIR}/docker-compose.yml"
 ENV_FILE="${COMPOSE_DIR}/.env"
 
-read -rp "Введите домен для Grafana (например, grafana.example.com): " GRAFANA_HOST
+if [ -t 0 ]; then
+  read -rp "Введите домен для Grafana (например, grafana.example.com): " GRAFANA_HOST
+else
+  read -rp "Введите домен для Grafana (например, grafana.example.com): " GRAFANA_HOST </dev/tty
+fi
 
 if ! docker network inspect "${NETWORK_NAME}" >/dev/null 2>&1; then
   echo "Создание docker-сети ${NETWORK_NAME}…"
@@ -61,7 +65,7 @@ services:
     env_file:
       - .env
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=\${GRAFANA_ADMIN_PASSWORD}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
     volumes:
       - grafana-data:/var/lib/grafana
     networks:
